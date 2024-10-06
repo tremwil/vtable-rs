@@ -9,13 +9,16 @@ pub unsafe trait VmtLayout: 'static {
     type Layout<T: 'static>: 'static + Copy;
 }
 
+#[repr(C)]
 pub struct VPtr<V: VmtLayout + ?Sized, T: 'static>(&'static <V as VmtLayout>::Layout<T>);
+
 impl<V: VmtLayout + ?Sized, T: 'static> Deref for VPtr<V, T> {
     type Target = &'static <V as VmtLayout>::Layout<T>;
     fn deref(&self) -> &Self::Target {
         &self.0
     }
 }
+
 impl<V: VmtLayout + ?Sized, T: 'static> DerefMut for VPtr<V, T> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0

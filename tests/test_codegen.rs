@@ -2,7 +2,9 @@ use vtable::{vtable, VPtr};
 
 #[vtable]
 pub trait Base {
-    fn a(&self, arg1: u32) -> bool;
+    fn a(&self, arg1: u32) -> bool {
+        false
+    }
     unsafe fn b(&self, arg1: *const u8, arg2: u32) -> bool;
 }
 
