@@ -1,3 +1,5 @@
+#![no_std]
+
 use vtable::{vtable, VPtr};
 
 #[vtable]

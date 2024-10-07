@@ -1,4 +1,6 @@
-use std::ops::{Deref, DerefMut};
+#![no_std]
+
+use core::ops::{Deref, DerefMut};
 
 pub use proc_macros::vtable;
 
