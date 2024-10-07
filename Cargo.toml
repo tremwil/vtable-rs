@@ -6,7 +6,7 @@ edition = "2021"
 authors = ["William Tremblay <tremwil@users.noreply.github.com>"]
 keywords = ["vtable", "memory hacking", "C++", "ffi"]
 categories = ["development-tools::ffi", "no-std::no-alloc"]
-license = "MIT OR Apache-2.0"
+license = "MIT"
 repository = "https://github.com/tremwil/vtable"
 
 [package]
