@@ -27,6 +27,14 @@ impl<V: VmtLayout + ?Sized, T: 'static> DerefMut for VPtr<V, T> {
     }
 }
 
+impl<V: VmtLayout + ?Sized, T: 'static> Clone for VPtr<V, T> {
+    fn clone(&self) -> Self {
+        Self(self.0)
+    }
+}
+
+impl<V: VmtLayout + ?Sized, T: 'static> Copy for VPtr<V, T> {}
+
 impl<T, V: VmtInstance<T> + ?Sized> Default for VPtr<V, T> {
     fn default() -> Self {
         VPtr(vmt_instance::<V, T>())
