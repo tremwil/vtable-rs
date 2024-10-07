@@ -1,5 +1,5 @@
 [workspace]
-members = ["vtable_proc_macros"]
+members = ["proc_macros"]
 
 [workspace.package]
 edition = "2021"
@@ -7,10 +7,10 @@ authors = ["William Tremblay <tremwil@users.noreply.github.com>"]
 keywords = ["vtable", "gamehacking", "cpp", "ffi"]
 categories = ["development-tools::ffi", "no-std::no-alloc"]
 license = "MIT"
-repository = "https://github.com/tremwil/vtable"
+repository = "https://github.com/tremwil/vtable-rs"
 
 [package]
-name = "vtable"
+name = "vtable-rs"
 version = "0.1.0"
 description = "Set of traits and macros to help dealing with C++ virtual method FFI"
 edition.workspace = true
@@ -21,4 +21,4 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-vtable-proc-macros = { path = "vtable_proc_macros", version = "0.1.0" }
+vtable-rs-proc-macros = { path = "proc_macros", version = "0.1.0" }

@@ -2,7 +2,7 @@
 
 use core::ops::{Deref, DerefMut};
 
-pub use vtable_proc_macros::vtable;
+pub use vtable_rs_proc_macros::vtable;
 
 pub trait VmtInstance<T: 'static>: 'static + VmtLayout {
     const VTABLE: &'static Self::Layout<T>;

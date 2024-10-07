@@ -262,7 +262,7 @@ pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
         None => proc_macro2::TokenStream::new(),
         Some(base) => quote! {
             impl<T: 'static> ::core::ops::Deref for #layout_ident<T> {
-                type Target = <dyn #base as ::vtable::VmtLayout>::Layout<T>;
+                type Target = <dyn #base as ::vtable_rs::VmtLayout>::Layout<T>;
 
                 fn deref(&self) -> &Self::Target {
                     &self._base
@@ -284,7 +284,7 @@ pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
     tokens.extend(quote! {
         #[repr(C)]
         #trait_vis struct #layout_ident<T: 'static> {
-            #(_base: <dyn #base_trait as ::vtable::VmtLayout>::Layout<T>,)*
+            #(_base: <dyn #base_trait as ::vtable_rs::VmtLayout>::Layout<T>,)*
             #(#fn_idents: #bare_fns,)*
         }
 
@@ -304,13 +304,13 @@ pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
 
         #base_deref_impl
 
-        unsafe impl ::vtable::VmtLayout for dyn #trait_ident {
+        unsafe impl ::vtable_rs::VmtLayout for dyn #trait_ident {
             type Layout<T: 'static> = #layout_ident<T>;
         }
 
-        impl<T: #trait_ident> ::vtable::VmtInstance<T> for dyn #trait_ident {
+        impl<T: #trait_ident> ::vtable_rs::VmtInstance<T> for dyn #trait_ident {
             const VTABLE: &'static Self::Layout<T> = &#layout_ident {
-                #(_base: *<dyn #base_trait as ::vtable::VmtInstance<T>>::VTABLE,)*
+                #(_base: *<dyn #base_trait as ::vtable_rs::VmtInstance<T>>::VTABLE,)*
                 #(#fn_idents: <T as #trait_ident>::#fn_idents),*
             };
         }

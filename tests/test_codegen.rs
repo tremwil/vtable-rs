@@ -1,6 +1,6 @@
 #![no_std]
 
-use vtable::{vtable, VPtr};
+use vtable_rs::{vtable, VPtr};
 
 struct LtStruct<'a> {
     _data: &'a [u8],
