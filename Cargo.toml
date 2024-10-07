@@ -1,10 +1,10 @@
 [workspace]
-members = ["proc_macros"]
+members = ["vtable_proc_macros"]
 
 [workspace.package]
 edition = "2021"
 authors = ["William Tremblay <tremwil@users.noreply.github.com>"]
-keywords = ["vtable", "memory hacking", "C++", "ffi"]
+keywords = ["vtable", "gamehacking", "cpp", "ffi"]
 categories = ["development-tools::ffi", "no-std::no-alloc"]
 license = "MIT"
 repository = "https://github.com/tremwil/vtable"
@@ -21,4 +21,4 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-vtable-proc-macros = { path = "proc_macros", version = "0.1.0" }
+vtable-proc-macros = { path = "vtable_proc_macros", version = "0.1.0" }
