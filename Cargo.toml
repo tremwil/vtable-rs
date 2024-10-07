@@ -2,6 +2,12 @@
 name = "vtable"
 version = "0.1.0"
 edition = "2021"
+authors = ["William Tremblay"]
+description = "Set of traits and macros to help dealing with C++ virtual method FFI"
+keywords = ["vtable", "memory hacking", "C++", "ffi"]
+categories = ["development-tools::ffi", "no-std::no-alloc"]
+license = "MIT OR Apache-2.0"
+repository = "https://github.com/tremwil/vtable"
 
 [dependencies]
 proc-macros = { path = "proc_macros" }
