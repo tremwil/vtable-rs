@@ -164,7 +164,7 @@ fn sig_to_vtable_thunk(sig: &Signature) -> proc_macro2::TokenStream {
 /// and provide our own implementations:
 ///
 /// ```rs
-/// use vtable::{vtable, VPtr};
+/// use vtable_rs::{vtable, VPtr};
 ///
 /// #[vtable]
 /// pub trait ObjVmt {

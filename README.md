@@ -17,7 +17,7 @@ This macro then allows us to represent `Obj`'s virtual function table in Rust
 and provide our own implementations:
 
 ```rs
-use vtable::{vtable, VPtr};
+use vtable_rs::{vtable, VPtr};
 
 #[vtable]
 pub trait ObjVmt {
