@@ -27,6 +27,17 @@ impl<V: VmtLayout + ?Sized, T: 'static> DerefMut for VPtr<V, T> {
     }
 }
 
+impl<V: VmtLayout + ?Sized, T: 'static> core::fmt::Debug for VPtr<V, T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct(core::any::type_name::<Self>())
+            .field(
+                "vtable",
+                &format_args!("{:X}", core::ptr::addr_of!(*self.0) as usize),
+            )
+            .finish()
+    }
+}
+
 impl<V: VmtLayout + ?Sized, T: 'static> Clone for VPtr<V, T> {
     fn clone(&self) -> Self {
         Self(self.0)

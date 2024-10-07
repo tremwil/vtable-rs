@@ -26,7 +26,7 @@ pub(crate) trait Derived: Base {
     fn c(&mut self) -> usize;
 }
 
-#[derive(Default)]
+#[derive(Default, Debug)]
 struct DerivedImpl {
     // VPtr<dyn T, Self: T> supports `Default`, so your compile-time generated vtable
     // can be automatically provided to the object
@@ -52,6 +52,8 @@ impl Derived for DerivedImpl {
 #[test]
 fn default_derived_impls_correct() {
     let mut d = DerivedImpl::default();
+
+    let vmt_copy = d.vftable;
 
     assert_eq!(d.a(42), (d.vftable.a)(&d, 42));
 
