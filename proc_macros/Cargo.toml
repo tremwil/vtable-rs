@@ -1,7 +1,13 @@
 [package]
 name = "proc-macros"
-version = "0.1.0"
-edition = "2021"
+description = "Proc macro implementation for the vtable crate"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [lib]
 proc-macro = true

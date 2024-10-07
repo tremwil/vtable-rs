@@ -1,13 +1,25 @@
-[package]
-name = "vtable"
+[workspace]
+members = ["proc_macros"]
+
+[workspace.package]
 version = "0.1.0"
 edition = "2021"
-authors = ["William Tremblay"]
-description = "Set of traits and macros to help dealing with C++ virtual method FFI"
+authors = ["William Tremblay <tremwil@users.noreply.github.com>"]
 keywords = ["vtable", "memory hacking", "C++", "ffi"]
 categories = ["development-tools::ffi", "no-std::no-alloc"]
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/tremwil/vtable"
+
+[package]
+name = "vtable"
+description = "Set of traits and macros to help dealing with C++ virtual method FFI"
+edition.workspace = true
+version.workspace = true
+authors.workspace = true
+keywords.workspace = true
+categories.workspace = true
+license.workspace = true
+repository.workspace = true
 
 [dependencies]
 proc-macros = { path = "proc_macros", version = "0.1.0" }
