@@ -3,7 +3,7 @@ use proc_macro2::Span;
 use quote::{quote, ToTokens};
 use syn::{
     parse_quote, punctuated::Punctuated, Abi, BareFnArg, FnArg, Ident, ItemTrait, Lifetime, LitStr,
-    Pat, Token, TraitItem, TraitItemFn, Type, TypeBareFn, TypeParamBound, TypeReference,
+    Pat, Signature, Token, TraitItem, TraitItemFn, Type, TypeBareFn, TypeParamBound, TypeReference,
 };
 
 fn check_restrictions(trait_def: &ItemTrait) {
@@ -56,19 +56,25 @@ fn set_method_abis(trait_def: &mut ItemTrait, abi: &str) {
 }
 
 fn trait_fn_to_bare_fn(fun: &TraitItemFn) -> TypeBareFn {
+    let lifetimes = fun
+        .sig
+        .generics
+        .lifetimes()
+        .map(|lt| syn::GenericParam::Lifetime(lt.to_owned()));
+
     TypeBareFn {
-        lifetimes: None,
+        lifetimes: syn::parse2(quote! { for <#(#lifetimes),*> }).unwrap(),
         unsafety: fun.sig.unsafety,
         abi: fun.sig.abi.clone(),
         fn_token: Token![fn](Span::call_site()),
         paren_token: fun.sig.paren_token,
         inputs: {
             let mut inputs = Punctuated::new();
-            let mut has_mut_reciever = false;
+            let mut has_ref_receiver = false;
             for input in fun.sig.inputs.iter() {
                 inputs.push(match input {
                     FnArg::Receiver(r) => {
-                        has_mut_reciever = r.reference.is_some();
+                        has_ref_receiver = r.reference.is_some();
                         BareFnArg {
                             attrs: r.attrs.clone(),
                             name: Some((
@@ -77,7 +83,7 @@ fn trait_fn_to_bare_fn(fun: &TraitItemFn) -> TypeBareFn {
                             )),
                             ty: Type::Reference(TypeReference {
                                 and_token: Token![&](Span::call_site()),
-                                lifetime: None,
+                                lifetime: r.lifetime().cloned(),
                                 mutability: r.mutability,
                                 elem: Box::new(parse_quote!(T)),
                             }),
@@ -95,7 +101,7 @@ fn trait_fn_to_bare_fn(fun: &TraitItemFn) -> TypeBareFn {
                     },
                 });
             }
-            if !has_mut_reciever {
+            if !has_ref_receiver {
                 panic!(
                     "vtable trait method \"{0}\" must have &self or &mut self parameter",
                     fun.sig.ident.to_string()
@@ -105,6 +111,39 @@ fn trait_fn_to_bare_fn(fun: &TraitItemFn) -> TypeBareFn {
         },
         variadic: None,
         output: fun.sig.output.clone(),
+    }
+}
+
+// TODO (WIP): Handle all lifetime edge cases before implementing
+fn sig_to_vtable_thunk(sig: &Signature) -> proc_macro2::TokenStream {
+    let (receiver_mut, receiver_lt) = match sig.inputs.first() {
+        Some(FnArg::Receiver(r)) => (r.mutability.clone(), r.lifetime().cloned()),
+        _ => unreachable!(),
+    };
+
+    let self_arg: FnArg = syn::parse2(quote! { &self }).unwrap();
+    let t_arg: FnArg = syn::parse2(quote! { this: & #receiver_lt #receiver_mut T }).unwrap();
+
+    let mut with_t = sig.clone();
+
+    *with_t.inputs.first_mut().unwrap() = self_arg;
+    with_t.inputs.insert(1, t_arg);
+    with_t.abi = None; // No need for an ABI on the thunk method
+
+    let ident = &sig.ident;
+    let arg_idents = with_t.inputs.iter().skip(1).map(|arg| match arg {
+        FnArg::Typed(pt) => match pt.pat.as_ref() {
+            Pat::Ident(ident_pat) => ident_pat.ident.clone(),
+            _ => unreachable!(),
+        },
+        _ => unreachable!(),
+    });
+
+    quote! {
+        #[inline]
+        pub #with_t {
+            (self.#ident)(#(#arg_idents),*)
+        }
     }
 }
 
@@ -164,13 +203,13 @@ fn trait_fn_to_bare_fn(fun: &TraitItemFn) -> TypeBareFn {
 /// ```
 ///
 /// The vtable layout is fully typed and can be accessed as `<dyn TraitName as VmtLayout>::Layout<T>`.
-/// A `VPtr` can be `Deref`'d into it to obtain both the bare function pointers and thunks that let one
-/// call through the vtable directly:
+/// A `VPtr` can be `Deref`'d into it to obtain the bare function pointers and thus call through
+/// the vtable directly:
 ///
 /// ```rs
 /// let obj = RustObj::default();
 /// let method_impl = obj.vftable.method; // extern "C" fn(&RustObj, u32) -> u32
-/// let call_result = obj.vftable.method(obj, 42);
+/// let call_result = method_impl(obj, 42);
 /// ```
 #[proc_macro_attribute]
 pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
@@ -237,36 +276,9 @@ pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
         },
     };
 
-    let thunk_impls = signatures.iter().map(|&sig| {
-        let receiver_mut = match sig.inputs.first() {
-            Some(FnArg::Receiver(r)) => r.mutability.clone(),
-            _ => unreachable!(),
-        };
-
-        let self_arg: FnArg = syn::parse2(quote! { &self }).unwrap();
-        let t_arg: FnArg = syn::parse2(quote! { this: & #receiver_mut T }).unwrap();
-
-        let mut with_t = sig.clone();
-        *with_t.inputs.first_mut().unwrap() = self_arg;
-        with_t.inputs.insert(1, t_arg);
-        with_t.abi = None; // No need for an ABI on the thunk method
-
-        let ident = &sig.ident;
-        let arg_idents = with_t.inputs.iter().skip(1).map(|arg| match arg {
-            FnArg::Typed(pt) => match pt.pat.as_ref() {
-                Pat::Ident(ident_pat) => ident_pat.ident.clone(),
-                _ => unreachable!(),
-            },
-            _ => unreachable!(),
-        });
-
-        quote! {
-            #[inline]
-            pub #with_t {
-                (self.#ident)(#(#arg_idents),*)
-            }
-        }
-    });
+    // TODO: Figure out 100% reliable strategy to adjust lifetimes
+    // so that lifetime inference works as expected in the trait definition
+    //let thunk_impls = signatures.iter().map(|&s| sig_to_vtable_thunk(s));
 
     let mut tokens = trait_def.to_token_stream();
     tokens.extend(quote! {
@@ -276,9 +288,9 @@ pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
             #(#fn_idents: #bare_fns,)*
         }
 
-        impl<T: 'static> #layout_ident<T> {
-            #(#thunk_impls)*
-        }
+        // impl<T: 'static> #layout_ident<T> {
+        //     #(#thunk_impls)*
+        // }
 
         impl<T> ::core::clone::Clone for #layout_ident<T> {
             fn clone(&self) -> Self {

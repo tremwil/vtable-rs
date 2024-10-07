@@ -2,6 +2,17 @@
 
 use vtable::{vtable, VPtr};
 
+struct LtStruct<'a> {
+    _data: &'a [u8],
+}
+
+#[vtable]
+pub trait Test {
+    fn returns_ref_implicit(&self) -> &u32;
+    fn returns_lt_bound_struct(&self) -> LtStruct<'_>;
+    fn returns_ref_complex<'a, 'b>(&'a self, other: &'b u32) -> &'a u32;
+}
+
 #[vtable]
 pub trait Base {
     fn a(&self, arg1: u32) -> bool {
@@ -42,13 +53,13 @@ impl Derived for DerivedImpl {
 fn default_derived_impls_correct() {
     let mut d = DerivedImpl::default();
 
-    assert_eq!(d.a(42), d.vftable.a(&d, 42));
+    assert_eq!(d.a(42), (d.vftable.a)(&d, 42));
 
     unsafe {
         let s = b"abc";
         let ptr = s.as_ptr();
-        assert_eq!(d.b(ptr, 420), d.vftable.b(&d, ptr, 420));
+        assert_eq!(d.b(ptr, 420), (d.vftable.b)(&d, ptr, 420));
     }
 
-    assert_eq!(d.c(), d.vftable.c(&mut d))
+    assert_eq!(d.c(), (d.vftable.c)(&mut d))
 }

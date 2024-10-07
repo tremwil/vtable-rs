@@ -1,8 +1,8 @@
 [package]
-name = "proc-macros"
+name = "vtable-proc-macros"
+version = "0.1.0"
 description = "Proc macro implementation for the vtable crate"
 edition.workspace = true
-version.workspace = true
 authors.workspace = true
 keywords.workspace = true
 categories.workspace = true

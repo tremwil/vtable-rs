@@ -56,11 +56,11 @@ pub trait DerivedObjVmt: ObjVmt {
 ```
 
 The vtable layout is fully typed and can be accessed as `<dyn TraitName as VmtLayout>::Layout<T>`.
-A `VPtr` can be `Deref`'d into it to obtain both the bare function pointers and thunks that let one
-call through the vtable directly:
+A `VPtr` can be `Deref`'d into it to obtain the bare function pointers and thus call through
+the vtable directly:
 
 ```rs
 let obj = RustObj::default();
 let method_impl = obj.vftable.method; // extern "C" fn(&RustObj, u32) -> u32
-let call_result = obj.vftable.method(obj, 42);
+let call_result = method_impl(obj, 42);
 ```
