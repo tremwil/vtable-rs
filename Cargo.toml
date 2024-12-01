@@ -11,7 +11,7 @@ repository = "https://github.com/tremwil/vtable-rs"
 
 [package]
 name = "vtable-rs"
-version = "0.1.1"
+version = "0.1.2"
 description = "Set of traits and macros to help dealing with C++ virtual method FFI"
 edition.workspace = true
 authors.workspace = true
