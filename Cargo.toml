@@ -21,4 +21,4 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
-vtable-rs-proc-macros = { path = "proc_macros", version = "0.1.0" }
+vtable-rs-proc-macros = { path = "proc_macros", version = "0.1.1" }
