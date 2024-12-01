@@ -285,7 +285,7 @@ pub fn vtable(_attr: TokenStream, item: TokenStream) -> TokenStream {
         #[repr(C)]
         #trait_vis struct #layout_ident<T: 'static> {
             #(_base: <dyn #base_trait as ::vtable_rs::VmtLayout>::Layout<T>,)*
-            #(#fn_idents: #bare_fns,)*
+            #(pub #fn_idents: #bare_fns,)*
         }
 
         // impl<T: 'static> #layout_ident<T> {
