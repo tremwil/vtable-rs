@@ -46,6 +46,15 @@ impl<V: VmtLayout + ?Sized, T: 'static> Clone for VPtr<V, T> {
 
 impl<V: VmtLayout + ?Sized, T: 'static> Copy for VPtr<V, T> {}
 
+impl<T, V: VmtInstance<T> + ?Sized> VPtr<V, T> {
+    /// Construct a [`VPtr`] initialized with a pointer to `T`'s vtable for `V`.
+    ///
+    /// This is the same as the [`Default::default`] implementation, but `const`.
+    pub const fn new() -> Self {
+        VPtr(vmt_instance::<V, T>())
+    }
+}
+
 impl<T, V: VmtInstance<T> + ?Sized> Default for VPtr<V, T> {
     fn default() -> Self {
         VPtr(vmt_instance::<V, T>())
